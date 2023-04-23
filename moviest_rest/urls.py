@@ -16,17 +16,23 @@ Including another URLconf
 from django.contrib import admin
 from django.urls import path, include
 
-from movies_rest_app.views import get_version
+from movies_rest_app.views import get_version, me, signup
+
+from rest_framework_simplejwt.views import (
+    TokenObtainPairView,
+    TokenRefreshView,
+)
 
 # api/ttt/users
 # api/imdb/movies => movies/
 
 from rest_framework import routers
 
-from movies_rest_app.views_generics import MoviesViewSet
+from movies_rest_app.views_generics import MoviesViewSet, OscarViewSet
 
 router = routers.DefaultRouter()
 router.register(r'api/imdb/movies', MoviesViewSet, basename='movie')
+router.register(r'api/imdb/oscars', OscarViewSet, basename='oscar')
 
 # api/imdb/movies - GET -> MoviesViewSet.list
 # api/imdb/movies - POST -> MoviesViewSet.create
@@ -37,8 +43,13 @@ print("Simple router urls:", router.urls)
 urlpatterns = [
     path('admin/', admin.site.urls),
     # path('api/imdb/', include('movies_rest_app.urls')),
-    path('api/version', get_version)
+    path('api/version', get_version),
+    path('api/auth/login', TokenObtainPairView.as_view()),
+    path('api/auth/refresh/', TokenRefreshView.as_view()),
+    path('api/auth/me', me),
+    path('api/auth/signup', signup)
 ]
+
 urlpatterns.extend(router.urls)
 
 print(urlpatterns)

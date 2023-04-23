@@ -62,14 +62,10 @@ class MovieActor(models.Model):
 
 
 class Oscar(models.Model):
+    movie = models.ForeignKey(Movie, on_delete=models.CASCADE)
+    actor = models.ForeignKey(Actor, null=True, blank=True, on_delete=models.CASCADE)
+    nomination_type = models.CharField(max_length=256)
+    year = models.DateField()
 
     class Meta:
         db_table = 'oscars'
-
-    movie = models.ForeignKey('Movie', on_delete=models.RESTRICT)
-    actor = models.ForeignKey('Actor', on_delete=models.RESTRICT, null=True)
-
-    year = models.IntegerField(validators=[
-        MinValueValidator(limit_value=1927),
-
-    ])

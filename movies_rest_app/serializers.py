@@ -111,3 +111,66 @@ class CastWithActorNameSerializer(serializers.ModelSerializer):
         model = MovieActor
         exclude = ['movie', 'id']
 
+
+class ThinActor(serializers.ModelSerializer):
+    class Meta:
+        model = Actor
+        fields = ['name', 'id']
+
+
+class MinimalActor(serializers.ModelSerializer):
+    class Meta:
+        model = Actor
+        fields = ['id']
+
+
+class ThinMovie(serializers.ModelSerializer):
+    class Meta:
+        model = Movie
+        fields = ['name', 'id']
+
+
+class OscarSerializer(serializers.ModelSerializer):
+    actor = ThinActor()
+    movie = ThinMovie()
+
+    class Meta:
+        model = Oscar
+        fields = '__all__'
+        # extra_kwargs = {'movie': {'write_only': True}}
+
+    # def create(self, validated_data):
+    #     validated_data['movie'] = self.context['movie']
+    #     return super().create(validated_data)
+
+
+class PostOscarSerializer(serializers.ModelSerializer):
+
+    class Meta:
+        model = Oscar
+        # fields = ['actor', 'nomination_type', 'year', 'movie']
+        fields = '__all__'
+        # exclude = ['movie']
+        # extra_kwargs = {'movie': {'write_only': True}}
+
+    def validate(self, attrs):
+        if attrs.get("actor"):
+            if attrs.get("nomination_type") in ["best actor", "sababa actor"]:
+                return attrs
+            else:
+                raise serializers.ValidationError("error. passing actor for only movie nomination award")
+        else:
+            return attrs
+
+
+class OscarUpdateSerializer(serializers.ModelSerializer):
+
+    class Meta:
+        model = Oscar
+        fields = '__all__'
+
+    def validate(self, attrs):
+        fields_list = [field for field in attrs if field not in ['actor', 'movie']]
+        if fields_list:
+            raise serializers.ValidationError("error. cant modify fields other than actor or movie")
+        return attrs

@@ -1,12 +1,14 @@
 from django import shortcuts
 from django.shortcuts import render, get_object_or_404
 from rest_framework import status
-from rest_framework.decorators import api_view
+from rest_framework.decorators import api_view, permission_classes
 from rest_framework.request import Request
 from rest_framework.response import Response
+from rest_framework.permissions import BasePermission, IsAuthenticated
 
 from movies_rest_app.models import *
 from movies_rest_app.serializers import *
+from auth.serializers import UserSerializer, SignupSerializer
 
 
 # Create your views here.
@@ -130,11 +132,19 @@ def movie_actors(request: Request, movie_id):
         return Response(serializer.data)
 
 
-#
-from rest_framework import generics
-#
-#
-# class MoviesApiView(generics.ListCreateAPIView):
-#
-#     queryset = Movie.objects.all()
-#     serializer_class = MovieSerializer
+@api_view(['GET'])
+# @permission_classes([IsAuthenticated])
+def me(request):
+    if request.user.is_authenticated:
+        s = UserSerializer(instance=request.user)
+        return Response(data=s.data)
+    else:
+        return Response(status=status.HTTP_401_UNAUTHORIZED)
+
+
+@api_view(['POST'])
+def signup(request):
+    s = SignupSerializer(data=request.data)
+    s.is_valid(raise_exception=True)
+    s.save()
+    return Response(data=s.data)
